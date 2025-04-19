@@ -1,0 +1,10 @@
+
+This part of the project is all about setting up the communication between players using Java TCP sockets. I built both the server and the client so players can connect, log in with a username, see who else is online, send match requests, and play against each other by sending simple text commands like moves. It’s the foundation for the online multiplayer part of the chess game.
+
+The server is multithreaded, which means it can handle multiple players at once. Each player runs on their own thread, and when two players decide to play, they get paired into a private game session. The game randomly assigns white and black, and any messages or moves are sent only between those two players. Everyone else stays in the waiting list until they’re matched.
+
+One of the big things this setup does is support multiple games at the same time. So if you have four players, you can run two matches side by side without any overlap or interference — this is what qualifies it for Bonus 1. Each game session is completely separate and isolated from the others.
+
+The client is a simple text-based program for now. You run it in the terminal, type in commands like LIST, REQUEST <username>, MOVE e2 e4, or EXIT, and you’ll see updates from the server or your opponent. It’s built in a way that makes it really easy for someone else to take over and hook it up to a GUI, so when the team builds the visual interface, they don’t need to change the server or protocol — just replace the console inputs/outputs with buttons and a chessboard.
+
+Everything is modular and clean, so the next steps for the team would be to plug in the actual chess logic (checking for valid moves, checkmate, etc.), and start building the GUI. But as far as the networking side goes — this part is solid, tested, and ready to go.
