@@ -117,6 +117,8 @@ public class ClientHandler implements Runnable {
         output.println("You may type moves like: MOVE e2 e4");
     }
 
+    
+
     public void endGame() {
         inGame = false;
         opponent = null;
@@ -155,5 +157,10 @@ public class ClientHandler implements Runnable {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @SuppressWarnings("unused")
+    void sendMessage(String message) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }
