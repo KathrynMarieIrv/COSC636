@@ -247,17 +247,26 @@ public class Board {
      */
     public List<String> renderLines() {
         List<String> rows = new ArrayList<>();
-        // y = 7 down to 0 gives rank 8 → rank 1
+    
+        // rank 8 → rank 1
         for (int y = 7; y >= 0; y--) {
             StringBuilder sb = new StringBuilder();
             for (int x = 0; x < 8; x++) {
                 Piece p = getPieceAt(new Coordinate(x, y));
-                sb.append(p == null 
-                        ? "[ ] " 
-                        : "[" + p.getType().toString().charAt(0) + "] ");
+                if (p == null) {
+                    sb.append("[ ] ");
+                } else {
+                    char symbol = p.getType().toString().charAt(0);
+                    // white uppercase, black lowercase
+                    if (p.getTeam() == Team.BLACK) {
+                        symbol = Character.toLowerCase(symbol);
+                    }
+                    sb.append("[").append(symbol).append("] ");
+                }
             }
             rows.add(sb.toString());
         }
+    
         return rows;
     }
 }
