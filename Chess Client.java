@@ -1,5 +1,8 @@
-import java.io.*;
-import java.net.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
 
 public class ChessClient {
     public static void main(String[] args) {
@@ -12,10 +15,10 @@ public class ChessClient {
                 try {
                     String msg;
                     while ((msg = serverIn.readLine()) != null) {
-                        System.out.println("[SERVER] " + msg);
+                        System.out.println(msg);
                     }
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    System.out.println("[ERROR] Lost connection to server.");
                 }
             });
 
@@ -24,11 +27,18 @@ public class ChessClient {
             String input;
             while ((input = userIn.readLine()) != null) {
                 serverOut.println(input);
-                if (input.equalsIgnoreCase("EXIT")) break;
+                if (input.equalsIgnoreCase("EXIT")) {
+                    break;
+                }
             }
 
+            socket.close();
+            System.exit(0);
+
         } catch (IOException e) {
+            System.out.println("[ERROR] Could not connect to server.");
             e.printStackTrace();
         }
     }
 }
+
