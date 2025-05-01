@@ -1,6 +1,6 @@
 import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.net.Socket;
+import java.util.List;
 
 public class ClientHandler implements Runnable {
     private Socket socket;
@@ -11,6 +11,8 @@ public class ClientHandler implements Runnable {
     private boolean inGame = false;
     private ClientHandler opponent;
     private List<ClientHandler> waitingPlayers;
+    private GameSession gameSession;
+    private ClientHandler pendingRequestFrom = null;
 
     public ClientHandler(Socket socket, List<ClientHandler> waitingPlayers) {
         this.socket = socket;
@@ -41,7 +43,9 @@ public class ClientHandler implements Runnable {
                 } else if (command.startsWith("REQUEST ")) {
                     requestMatch(command.substring(8).trim());
                 } else if (inGame && command.startsWith("MOVE ")) {
-                    sendToOpponent("[MOVE] " + command.substring(5));
+                    if (gameSession != null) {
+                        gameSession.handleMove(this, command.substring(5).trim());
+                    }
                 } else if (command.equalsIgnoreCase("YES") || command.equalsIgnoreCase("NO")) {
                     handleResponse(command);
                 } else if (command.equalsIgnoreCase("EXIT")) {
@@ -68,8 +72,6 @@ public class ClientHandler implements Runnable {
             }
         }
     }
-
-    private ClientHandler pendingRequestFrom = null;
 
     private void requestMatch(String targetName) {
         ClientHandler target = null;
@@ -104,7 +106,9 @@ public class ClientHandler implements Runnable {
                 waitingPlayers.remove(pendingRequestFrom);
             }
 
-            new GameSession(this, pendingRequestFrom); // start game session
+            GameSession session = new GameSession(this, pendingRequestFrom);
+            this.gameSession = session;
+            pendingRequestFrom.gameSession = session;
         } else {
             pendingRequestFrom.output.println(username + " declined your request.");
         }
@@ -116,8 +120,6 @@ public class ClientHandler implements Runnable {
         output.println("Game started! You are playing as " + color);
         output.println("You may type moves like: MOVE e2 e4");
     }
-
-    
 
     public void endGame() {
         inGame = false;
@@ -134,6 +136,10 @@ public class ClientHandler implements Runnable {
         }
     }
 
+    public void sendMessage(String message) {
+        output.println(message);
+    }
+
     public void setOpponent(ClientHandler opp) {
         this.opponent = opp;
     }
@@ -142,11 +148,19 @@ public class ClientHandler implements Runnable {
         this.color = color;
     }
 
+    public String getColor() {
+        return color;
+    }
+
     private void cleanUp() {
         try {
             if (inGame && opponent != null) {
                 opponent.output.println("Your opponent disconnected.");
-                opponent.endGame();
+                if (opponent.gameSession != null) {
+                    opponent.gameSession.endSession();
+                } else {
+                    opponent.endGame();
+                }
             }
 
             synchronized (waitingPlayers) {
@@ -157,10 +171,5 @@ public class ClientHandler implements Runnable {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    @SuppressWarnings("unused")
-    void sendMessage(String message) {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 }
