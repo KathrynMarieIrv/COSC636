@@ -1,3 +1,5 @@
+package Pieces;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,7 +9,6 @@ public class Rook extends Piece {
         super(team, PieceTypes.ROOK);
     }
 
-    //Rook moves Forward, Back, Left, Right any number of unblocked squares
     @Override
     public List<Move> availableMoves(Board board, Coordinate currentCoord) {
         List<Move> moves = new ArrayList<>();
@@ -34,7 +35,7 @@ public class Rook extends Piece {
                     moves.add(new Move(currentCoord, target));
                 } else {
                     if (targetPiece.getTeam() != this.getTeam()) {
-                        moves.add(new Move(currentCoord, target)); // Take Piece
+                        moves.add(new Move(currentCoord, target));
                     }
                     break; // Blocked
                 }
@@ -44,3 +45,4 @@ public class Rook extends Piece {
         return moves;
     }
 }
+
