@@ -1,3 +1,5 @@
+package Pieces;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,7 +9,6 @@ public class Bishop extends Piece {
         super(team, PieceTypes.BISHOP);
     }
 
-    //Bishop moves diagonally any number of unblocked squares 
     @Override
     public List<Move> availableMoves(Board board, Coordinate currentCoord) {
         List<Move> moves = new ArrayList<>();
@@ -34,9 +35,9 @@ public class Bishop extends Piece {
                     moves.add(new Move(currentCoord, target));
                 } else {
                     if (targetPiece.getTeam() != this.getTeam()) {
-                        moves.add(new Move(currentCoord, target)); // Take Piece
+                        moves.add(new Move(currentCoord, target));
                     }
-                    break; // Blocked by a piece
+                    break; // Stop scanning in this direction
                 }
             }
         }
@@ -44,3 +45,5 @@ public class Bishop extends Piece {
         return moves;
     }
 }
+
+
