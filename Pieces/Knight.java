@@ -1,3 +1,5 @@
+package Pieces;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,13 +9,12 @@ public class Knight extends Piece {
         super(team, PieceTypes.KNIGHT);
     }
 
-    //Knight can jump over other pieces, moves up 2, over 1 in any direction
     @Override
     public List<Move> availableMoves(Board board, Coordinate currentCoord) {
         List<Move> moves = new ArrayList<>();
         int[][] directions = {
-            {2, 1}, {2, -1}, {-2, 1}, {-2, -1}, 
-            {1, 2}, {1, -2}, {-1, 2}, {-1, -2}
+                {2, 1}, {2, -1}, {-2, 1}, {-2, -1},
+                {1, 2}, {1, -2}, {-1, 2}, {-1, -2}
         };
 
         for (int[] dir : directions) {
@@ -25,7 +26,7 @@ public class Knight extends Piece {
                 Piece targetPiece = board.getPieceAt(target);
 
                 if (targetPiece == null || targetPiece.getTeam() != this.getTeam()) {
-                    moves.add(new Move(currentCoord, target)); //Take Piece
+                    moves.add(new Move(currentCoord, target));
                 }
             }
         }
