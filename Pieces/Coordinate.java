@@ -1,3 +1,5 @@
+package Pieces;
+
 public class Coordinate {
     private final int x;
     private final int y;
@@ -32,4 +34,22 @@ public class Coordinate {
     public String toString() {
         return "(" + x + "," + y + ")";
     }
+
+    // ✨ NEW: Convert standard chess notation like "e2" -> Coordinate(x,y)
+    public static Coordinate fromAlgebraic(String text) {
+        if (text.length() != 2) {
+            throw new IllegalArgumentException("Invalid coordinate: " + text);
+        }
+        char file = text.toLowerCase().charAt(0); // column letter (a-h)
+        char rank = text.charAt(1);               // row number (1-8)
+
+        int x = file - 'a';       // 'a' -> 0, 'b' -> 1, ..., 'h' -> 7
+        int y = rank - '1';       // '1' -> 0, '2' -> 1, ..., '8' -> 7
+
+        if (x < 0 || x >= 8 || y < 0 || y >= 8) {
+            throw new IllegalArgumentException("Invalid coordinate: " + text);
+        }
+        return new Coordinate(x, y);
+    }
 }
+
