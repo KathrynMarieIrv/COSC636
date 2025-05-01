@@ -1,3 +1,5 @@
+package Pieces;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,7 +13,7 @@ public class Queen extends Piece {
     public List<Move> availableMoves(Board board, Coordinate currentCoord) {
         List<Move> moves = new ArrayList<>();
 
-        // Queen can move like the Rook, Forward, Back, Left, Right any number of unblocked squares
+        // Queen moves like Rook (straight lines)
         int[] dx = {1, -1, 0, 0};
         int[] dy = {0, 0, 1, -1};
 
@@ -34,14 +36,14 @@ public class Queen extends Piece {
                     moves.add(new Move(currentCoord, target));
                 } else {
                     if (targetPiece.getTeam() != this.getTeam()) {
-                        moves.add(new Move(currentCoord, target)); // Capture
+                        moves.add(new Move(currentCoord, target));
                     }
-                    break; // Blocked
+                    break;
                 }
             }
         }
 
-        // Queen can move like the Bishop, diagonally, any number of unblocked squares
+        // Queen moves like Bishop (diagonals)
         int[] dx_diag = {1, 1, -1, -1};
         int[] dy_diag = {1, -1, 1, -1};
 
@@ -64,9 +66,9 @@ public class Queen extends Piece {
                     moves.add(new Move(currentCoord, target));
                 } else {
                     if (targetPiece.getTeam() != this.getTeam()) {
-                        moves.add(new Move(currentCoord, target)); // Take Piece
+                        moves.add(new Move(currentCoord, target));
                     }
-                    break; // Blocked
+                    break;
                 }
             }
         }
@@ -74,3 +76,4 @@ public class Queen extends Piece {
         return moves;
     }
 }
+
