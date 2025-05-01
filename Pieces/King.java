@@ -1,3 +1,5 @@
+package Pieces;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,7 +9,6 @@ public class King extends Piece {
         super(team, PieceTypes.KING);
     }
 
-    //King can move one square at a time in any direction
     @Override
     public List<Move> availableMoves(Board board, Coordinate currentCoord) {
         List<Move> moves = new ArrayList<>();
@@ -23,7 +24,7 @@ public class King extends Piece {
                 Piece targetPiece = board.getPieceAt(target);
 
                 if (targetPiece == null || targetPiece.getTeam() != this.getTeam()) {
-                    moves.add(new Move(currentCoord, target)); //Take piece
+                    moves.add(new Move(currentCoord, target));
                 }
             }
         }
@@ -31,3 +32,4 @@ public class King extends Piece {
         return moves;
     }
 }
+
