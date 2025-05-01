@@ -1,3 +1,5 @@
+package Pieces;
+
 import java.util.List;
 
 public class Board {
@@ -12,15 +14,12 @@ public class Board {
         }
     }
 
-    // Sets up the board with pieces 
     public void setupBoard() {
-        // Puts pawns on the board 
         for (int i = 0; i < 8; i++) {
             placePiece(new Pawn(Team.WHITE), new Coordinate(i, 1));
             placePiece(new Pawn(Team.BLACK), new Coordinate(i, 6));
         }
 
-        // Place other pieces on the board
         placePiece(new Rook(Team.WHITE), new Coordinate(0, 0));
         placePiece(new Rook(Team.WHITE), new Coordinate(7, 0));
         placePiece(new Rook(Team.BLACK), new Coordinate(0, 7));
@@ -63,116 +62,41 @@ public class Board {
         getSquare(coord).removePiece();
     }
 
-    public boolean isSquareUnderAttack(Coordinate square, Team team) {
-        for (int x = 0; x < 8; x++) {
-            for (int y = 0; y < 8; y++) {
-                Coordinate from = new Coordinate(x, y);
-                Piece piece = getPieceAt(from);
-    
-                if (piece != null && piece.getTeam() != team) {
-                    List<Move> moves = piece.availableMoves(this, from);
-                    for (Move move : moves) {
-                        if (move.getTarget().equals(square)) {
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    // Regular and Special Moves
     public boolean movePiece(Coordinate from, Coordinate to) {
         Piece piece = getPieceAt(from);
-        if (piece == null) {
-            return false;
-        }
-        
-
-        //Castling
-        if (isCastlingMove(from, to)) {
-            performCastlingMove(from, to);
-            return true;
-        }
-
-        //Pawn Promotion
-        if (piece instanceof Pawn && (to.getY() == 0 || to.getY() == 7)) {
-            promotePawn(to);  
-        }
+        if (piece == null) return false;
 
         List<Move> availableMoves = piece.availableMoves(this, from);
         for (Move move : availableMoves) {
-            if (move.getTarget().equals(to)) {
+            if (move.getTo().equals(to)) {
+                if (piece instanceof King && Math.abs(from.getX() - to.getX()) == 2) {
+                    handleCastling(from, to, piece.getTeam());
+                }
                 removePiece(from);
                 placePiece(piece, to);
+                piece.setHasMoved(true);
+
+                if (piece instanceof Pawn) {
+                    if ((piece.getTeam() == Team.WHITE && to.getY() == 7) ||
+                            (piece.getTeam() == Team.BLACK && to.getY() == 0)) {
+                        placePiece(new Queen(piece.getTeam()), to);
+                    }
+                }
                 return true;
             }
         }
         return false;
     }
 
-    //Castling
-    private boolean isCastlingMove(Coordinate from, Coordinate to) {
-        Piece piece = getPieceAt(from);
-    
-        if (!(piece instanceof King king) || king.hasMoved()) return false;
-    
-        int deltaX = to.getX() - from.getX();
-        int y = from.getY();
-    
-        if (Math.abs(deltaX) != 2 || from.getY() != to.getY()) return false;
-    
-        boolean isKingside = deltaX > 0;
-        Coordinate rookCoord = isKingside ? new Coordinate(7, y) : new Coordinate(0, y);
-        Piece rook = getPieceAt(rookCoord);
-    
-        if (!(rook instanceof Rook) || rook.hasMoved()) return false;
-    
-        // Check squares between king and rook are empty
-        int start = Math.min(from.getX(), rookCoord.getX()) + 1;
-        int end = Math.max(from.getX(), rookCoord.getX()) - 1;
-        for (int x = start; x <= end; x++) {
-            if (getPieceAt(new Coordinate(x, y)) != null) return false;
-        }
-        // Make sure you are not castling into check or checkmate
-    
-        return !(isSquareUnderAttack(from, king.getTeam()) ||
-                isSquareUnderAttack(new Coordinate(from.getX() + (isKingside ? 1 : -1), y), king.getTeam()) ||
-                isSquareUnderAttack(to, king.getTeam()));
-    }
-
-    private void performCastlingMove(Coordinate from, Coordinate to) {
-        Piece king = getPieceAt(from);
-        int y = from.getY();
-        boolean isKingside = to.getX() > from.getX();
-    
-        Coordinate rookFrom = isKingside ? new Coordinate(7, y) : new Coordinate(0, y);
-        Coordinate rookTo = isKingside ? new Coordinate(5, y) : new Coordinate(3, y);
-    
-        Piece rook = getPieceAt(rookFrom);
-    
-        // Move King
-        removePiece(from);
-        placePiece(king, to);
-    
-        // Move Rook
-        removePiece(rookFrom);
-        placePiece(rook, rookTo);
-    }
-    
-
-    // Pawn promotion
-    private void promotePawn(Coordinate coord) {
-        Piece piece = getPieceAt(coord);
-        
-        if (piece instanceof Pawn pawn) {
-            
-            // Promote the pawn to a Queen (or other piece)
-            if ((pawn.getTeam() == Team.WHITE && coord.getY() == 7) || 
-                (pawn.getTeam() == Team.BLACK && coord.getY() == 0)) {
-                placePiece(new Queen(pawn.getTeam()), coord);
-            }
+    private void handleCastling(Coordinate from, Coordinate to, Team team) {
+        if (to.getX() == 6) {
+            Piece rook = getPieceAt(new Coordinate(7, from.getY()));
+            removePiece(new Coordinate(7, from.getY()));
+            placePiece(rook, new Coordinate(5, from.getY()));
+        } else if (to.getX() == 2) {
+            Piece rook = getPieceAt(new Coordinate(0, from.getY()));
+            removePiece(new Coordinate(0, from.getY()));
+            placePiece(rook, new Coordinate(3, from.getY()));
         }
     }
 
@@ -188,14 +112,30 @@ public class Board {
         return null;
     }
 
-    //Checking if King is in Check
-    public boolean isInCheck(Team team) {
-        Coordinate kingPos = findKing(team);
-        return isSquareUnderAttack(kingPos, team);
+    public boolean isSquareUnderAttack(Coordinate square, Team team) {
+        for (int x = 0; x < 8; x++) {
+            for (int y = 0; y < 8; y++) {
+                Coordinate from = new Coordinate(x, y);
+                Piece piece = getPieceAt(from);
+                if (piece != null && piece.getTeam() != team) {
+                    List<Move> moves = piece.availableMoves(this, from);
+                    for (Move move : moves) {
+                        if (move.getTo().equals(square)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
 
-    //Checking if King is in Checkmate - meaning game over
-    public boolean isCheckmate(Team team) {
+    public boolean isInCheck(Team team) {
+        Coordinate kingPos = findKing(team);
+        return kingPos != null && isSquareUnderAttack(kingPos, team);
+    }
+
+    public boolean isInCheckmate(Team team) {
         if (!isInCheck(team)) return false;
 
         for (int x = 0; x < 8; x++) {
@@ -205,8 +145,8 @@ public class Board {
                 if (piece != null && piece.getTeam() == team) {
                     List<Move> moves = piece.availableMoves(this, from);
                     for (Move move : moves) {
-                        Board copy = this.copy(); // You will implement this
-                        copy.movePiece(from, (Coordinate) move.getTarget());
+                        Board copy = this.copy();
+                        copy.movePiece(from, move.getTo());
                         if (!copy.isInCheck(team)) {
                             return false;
                         }
@@ -218,21 +158,73 @@ public class Board {
     }
 
     public Board copy() {
-        throw new UnsupportedOperationException("Board.copy() not implemented yet.");
-    }
-    
-
-    public void displayBoard() {
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                Piece piece = getPieceAt(new Coordinate(i, j));
-                if (piece == null) {
-                    System.out.print("[ ] ");
-                } else {
-                    System.out.print("[" + piece.getType().toString().substring(0, 1) + "] ");
+        Board newBoard = new Board();
+        for (int x = 0; x < 8; x++) {
+            for (int y = 0; y < 8; y++) {
+                Piece original = getPieceAt(new Coordinate(x, y));
+                if (original != null) {
+                    try {
+                        Piece cloned = original.getClass()
+                                .getDeclaredConstructor(Team.class)
+                                .newInstance(original.getTeam());
+                        cloned.setHasMoved(original.hasMoved());
+                        newBoard.placePiece(cloned, new Coordinate(x, y));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             }
-            System.out.println();
         }
+        return newBoard;
+    }
+
+    public String[][] generateBoardState() {
+        String[][] state = new String[8][8];
+        for (int x = 0; x < 8; x++) {
+            for (int y = 0; y < 8; y++) {
+                Piece piece = getPieceAt(new Coordinate(x, y));
+                if (piece == null) {
+                    state[x][y] = "";
+                } else {
+                    String code = switch (piece.getType()) {
+                        case PAWN -> "P";
+                        case ROOK -> "R";
+                        case KNIGHT -> "N";
+                        case BISHOP -> "B";
+                        case QUEEN -> "Q";
+                        case KING -> "K";
+                    };
+                    if (piece.getTeam() == Team.BLACK) {
+                        code = code.toLowerCase();
+                    }
+                    state[x][y] = code;
+                }
+            }
+        }
+        return state;
+    }
+
+    // New Method: text version of board for terminal display
+    public String toTextBoard() {
+        StringBuilder sb = new StringBuilder();
+        for (int y = 7; y >= 0; y--) {
+            sb.append("[SERVER] ");
+            for (int x = 0; x < 8; x++) {
+                Piece piece = getPieceAt(new Coordinate(x, y));
+                if (piece == null) {
+                    sb.append(". ");
+                } else {
+                    char c = piece.getType().toString().charAt(0);
+                    if (piece.getTeam() == Team.BLACK) {
+                        c = Character.toLowerCase(c);
+                    }
+                    sb.append(c).append(" ");
+                }
+            }
+            sb.append("\n");
+        }
+        return sb.toString();
     }
 }
+
+
