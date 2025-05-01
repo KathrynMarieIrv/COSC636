@@ -1,3 +1,4 @@
+package Pieces;
 
 import java.util.List;
 
@@ -52,3 +53,4 @@ public abstract class Piece {
 
     public abstract List<Move> availableMoves(Board board, Coordinate currentCoord);
 }
+
